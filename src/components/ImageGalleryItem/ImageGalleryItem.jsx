@@ -1,8 +1,8 @@
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 
 export const ImageGalleryItem = ({ webformatURL, tags }) => {
   return (
-    <li className="ImageGalleryItem" >
+    <li className="ImageGalleryItem">
       <img className="ImageGalleryItem-image" src={webformatURL} alt={tags} />
     </li>
   );
@@ -10,5 +10,5 @@ export const ImageGalleryItem = ({ webformatURL, tags }) => {
 
 ImageGalleryItem.propTypes = {
   webformatURL: PropTypes.string.isRequired,
-  tags: PropTypes.string.isRequired
-}
+  tags: PropTypes.string.isRequired,
+};

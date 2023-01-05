@@ -2,8 +2,6 @@ import { React, Component } from 'react';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Searchbar } from './Searchbar/Searchbar';
 
-
-
 export class App extends Component {
   state = {
     searchName: '',
@@ -12,8 +10,6 @@ export class App extends Component {
   handleFormSubmit = searchName => {
     this.setState({ searchName });
   };
-
-
 
   render() {
     const { searchName } = this.state;

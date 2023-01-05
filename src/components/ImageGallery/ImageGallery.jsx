@@ -1,85 +1,98 @@
-import { Button } from "components/Button/Button";
-import { ImageGalleryItem } from "components/ImageGalleryItem/ImageGalleryItem";
-import Notiflix from "notiflix";
-import { Component } from "react";
-import { fetchImages } from "services/pixabayApi";
+import PropTypes from 'prop-types';
+import Notiflix from 'notiflix';
+import { Component } from 'react';
+import { fetchImages } from 'services/pixabayApi';
+import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
+import { Button } from 'components/Button/Button';
+import { Loader } from 'components/Loader/Loader';
+import { WaitRequest } from 'components/WaitRequest/WaitRequest';
 
 export class ImageGallery extends Component {
-
   state = {
     images: [],
     page: 1,
     error: null,
-    status: "idle",
-    showBtnLoadMore: false
-  }
+    status: 'idle',
+    showBtnLoadMore: false,
+    showLoader: false,
+    largeImage: '',
+    showModal: false,
+  };
 
-
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate = prevProps => {
     const prevSearchName = prevProps.searchName;
     const nextSearchName = this.props.searchName;
 
     if (prevSearchName !== nextSearchName) {
-      this.setState({ status: "pending", page: 1 });
-      const { page } = this.state
-
-      fetchImages(nextSearchName, page)
-        .then(images => {
-          if (images.totalHits !== 0) {
-            Notiflix.Notify.success(`Hooray! We found ${images.totalHits} images.`);
-            this.setState({ showBtnLoadMore: true });
-          }
-          if (images.totalHits <= 12) {
-            this.setState({ showBtnLoadMore: false });
-          }
-          this.setState({ images: images.hits, status: "resolved" })
-        })
-        .catch(error => this.setState({ error, status: "rejected" }))
-    }
-  }
-
-  onNextPage = () => {
-
-    this.setState(
-      prevState => ({ page: (prevState.page += 1), }), () => {
-        this.setState({ status: "pending" });
+      this.setState({ status: 'pending', page: 1, showLoader: true }, () => {
         const page = this.state.page;
-        const nextSearchName = this.props.nextSearchName;
+
+        fetchImages(nextSearchName, page)
+          .then(images => {
+            if (images.totalHits !== 0) {
+              Notiflix.Notify.success(
+                `Hooray! We found ${images.totalHits} images.`
+              );
+              this.setState({ showBtnLoadMore: true });
+            }
+            if (images.totalHits <= 12) {
+              this.setState({ showBtnLoadMore: false });
+            }
+
+            this.setState({
+              images: [...images.hits],
+              status: 'resolved',
+              showLoader: false,
+            });
+          })
+          .catch(error => this.setState({ error, status: 'rejected' }));
+      });
+    }
+  };
+
+  onClickLoadMore = () => {
+    this.setState(
+      prevState => ({ page: (prevState.page += 1) }),
+      () => {
+        this.setState({ status: 'pending', showLoader: true });
+        const page = this.state.page;
+        const nextSearchName = this.props.searchName;
         // const { smoothScroll } = this.state;
 
         fetchImages(nextSearchName, page)
           .then(images => {
             if (page === Math.ceil(images.totalHits / 12)) {
-              Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
+              Notiflix.Notify.info(
+                "We're sorry, but you've reached the end of search results."
+              );
               this.setState({ showBtnLoadMore: false });
             }
 
             this.setState(prevState => ({
               images: [...prevState.images, ...images.hits],
-              status: "resolved",
-              // showLoader: false,
+              status: 'resolved',
+              showLoader: false,
               // smoothScroll: true,
             }));
-            // if (smoothScroll) { this.windowScroll(); }
+            // if (smoothScroll) {
+            //   this.windowScroll();
+            // }
           })
-          .catch(error => this.setState({ error, status: "rejected" }));
+          .catch(error => this.setState({ error, status: 'rejected' }));
       }
     );
   };
 
   render() {
-    const { images, error, status, showBtnLoadMore } = this.state
+    const { images, error, status, showBtnLoadMore, showLoader } = this.state;
 
-    if (status === "idle") {
-      return <h2>НАЧНИТЕ ВВОДИТЬ ВАШ ЗАПРОС</h2>
+    if (status === 'idle') {
+      return <WaitRequest />;
     }
-    if (status === "pending") {
-      return <h2>ИДЕТ ЗАГРУЗКА</h2>
+    if (status === 'rejected') {
+      return <h2>{error.message}</h2>;
     }
-    if (status === "rejected") {
-      return <h2>{error.message}</h2>
-    }
-    if (status === "resolved") {
+    if (status === 'resolved' || status === 'pending') {
       return (
         <div className="Wrapper">
           <ul className="ImageGallery">
@@ -88,12 +101,19 @@ export class ImageGallery extends Component {
                 <ImageGalleryItem
                   key={id}
                   webformatURL={webformatURL}
-                  tags={tags} />
-              )
+                  tags={tags}
+                />
+              );
             })}
           </ul>
-          {showBtnLoadMore && < Button loadMore={this.onNextPage} />}
-        </div>)
+          {showLoader && <Loader />}
+          {showBtnLoadMore && <Button loadMore={this.onClickLoadMore} />}
+        </div>
+      );
     }
   }
+}
+
+ImageGallery.propTypes = {
+  searchName: PropTypes.string.isRequired,
 };
