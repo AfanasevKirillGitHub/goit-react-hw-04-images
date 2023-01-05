@@ -1,3 +1,4 @@
+import { Button } from "components/Button/Button";
 import { ImageGalleryItem } from "components/ImageGalleryItem/ImageGalleryItem";
 import Notiflix from "notiflix";
 import { Component } from "react";
@@ -9,7 +10,8 @@ export class ImageGallery extends Component {
     images: [],
     page: 1,
     error: null,
-    status: "idle"
+    status: "idle",
+    showBtnLoadMore: false
   }
 
 
@@ -25,10 +27,10 @@ export class ImageGallery extends Component {
         .then(images => {
           if (images.totalHits !== 0) {
             Notiflix.Notify.success(`Hooray! We found ${images.totalHits} images.`);
-            // this.setState({ showBtnLoadMore: true });
+            this.setState({ showBtnLoadMore: true });
           }
           if (images.totalHits <= 12) {
-            // this.setState({ showBtnLoadMore: false });
+            this.setState({ showBtnLoadMore: false });
           }
           this.setState({ images: images.hits, status: "resolved" })
         })
@@ -36,9 +38,37 @@ export class ImageGallery extends Component {
     }
   }
 
+  onNextPage = () => {
+
+    this.setState(
+      prevState => ({ page: (prevState.page += 1), }), () => {
+        this.setState({ status: "pending" });
+        const page = this.state.page;
+        const nextSearchName = this.props.nextSearchName;
+        // const { smoothScroll } = this.state;
+
+        fetchImages(nextSearchName, page)
+          .then(images => {
+            if (page === Math.ceil(images.totalHits / 12)) {
+              Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
+              this.setState({ showBtnLoadMore: false });
+            }
+
+            this.setState(prevState => ({
+              images: [...prevState.images, ...images.hits],
+              status: "resolved",
+              // showLoader: false,
+              // smoothScroll: true,
+            }));
+            // if (smoothScroll) { this.windowScroll(); }
+          })
+          .catch(error => this.setState({ error, status: "rejected" }));
+      }
+    );
+  };
 
   render() {
-    const { images, error, status } = this.state
+    const { images, error, status, showBtnLoadMore } = this.state
 
     if (status === "idle") {
       return <h2>НАЧНИТЕ ВВОДИТЬ ВАШ ЗАПРОС</h2>
@@ -51,16 +81,19 @@ export class ImageGallery extends Component {
     }
     if (status === "resolved") {
       return (
-        <ul className="ImageGallery">
-          {images.map(({ id, webformatURL, tags }) => {
-            return (
-              <ImageGalleryItem
-                key={id}
-                webformatURL={webformatURL}
-                tags={tags} />
-            )
-          })}
-        </ul>)
+        <div className="Wrapper">
+          <ul className="ImageGallery">
+            {images.map(({ id, webformatURL, tags }) => {
+              return (
+                <ImageGalleryItem
+                  key={id}
+                  webformatURL={webformatURL}
+                  tags={tags} />
+              )
+            })}
+          </ul>
+          {showBtnLoadMore && < Button loadMore={this.onNextPage} />}
+        </div>)
     }
   }
 };

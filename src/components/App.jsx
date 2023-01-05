@@ -13,6 +13,8 @@ export class App extends Component {
     this.setState({ searchName });
   };
 
+
+
   render() {
     const { searchName } = this.state;
 
