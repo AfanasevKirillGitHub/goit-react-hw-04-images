@@ -2,22 +2,24 @@ import { React, Component } from 'react';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Searchbar } from './Searchbar/Searchbar';
 
+
+
 export class App extends Component {
   state = {
-    images: '',
+    searchName: '',
   };
 
-  handleFormSubmit = images => {
-    this.setState({ images });
+  handleFormSubmit = searchName => {
+    this.setState({ searchName });
   };
 
   render() {
-    const { images } = this.state;
+    const { searchName } = this.state;
 
     return (
       <>
         <Searchbar onSubmit={this.handleFormSubmit} />
-        <ImageGallery images={images} />
+        <ImageGallery searchName={searchName} />
       </>
     );
   }

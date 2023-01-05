@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Notiflix from 'notiflix';
 
-export const pixabayApi = async (query, page) => {
+export const fetchImages = async (query, page) => {
   const API_URL = 'https://pixabay.com/api/';
   const options = {
     params: {

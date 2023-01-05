@@ -5,30 +5,30 @@ import PropTypes from 'prop-types';
 
 export class Searchbar extends Component {
   state = {
-    searchValue: '',
+    searchName: '',
   };
 
   handleOnChange = event => {
-    this.setState({ searchValue: event.currentTarget.value.toLowerCase() });
+    this.setState({ searchName: event.currentTarget.value.toLowerCase() });
   };
 
   handleOnSubmit = event => {
     event.preventDefault();
 
-    if (this.state.searchValue.trim() === '') {
+    if (this.state.searchName.trim() === '') {
       Notiflix.Notify.warning('Please enter your request');
       return;
     }
 
     const { onSubmit } = this.props;
-    const { searchValue } = this.state;
+    const { searchName } = this.state;
+    onSubmit(searchName);
 
-    onSubmit(searchValue);
-    this.setState({ searchValue: '' });
+    this.setState({ searchName: '' });
   };
 
   render() {
-    const { searchValue } = this.state;
+    const { searchName } = this.state;
 
     return (
       <header className="Searchbar">
@@ -39,7 +39,7 @@ export class Searchbar extends Component {
 
           <input
             onChange={this.handleOnChange}
-            value={searchValue}
+            value={searchName}
             className="SearchForm-input"
             type="text"
             autoComplete="off"
