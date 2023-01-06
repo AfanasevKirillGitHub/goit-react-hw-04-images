@@ -100,7 +100,6 @@ export class ImageGallery extends Component {
 
   render() {
     const { images, error, status, showBtnLoadMore, showLoader, showModal, largeImage } = this.state;
-    console.log(images);
     if (status === 'idle') {
       return <WaitRequest />;
     }
