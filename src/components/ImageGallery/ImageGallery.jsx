@@ -6,6 +6,8 @@ import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import { Button } from 'components/Button/Button';
 import { Loader } from 'components/Loader/Loader';
 import { WaitRequest } from 'components/WaitRequest/WaitRequest';
+import { Modal } from 'components/Modal/Modal';
+import { NotFound } from 'components/NotFound/NotFound';
 
 export class ImageGallery extends Component {
   state = {
@@ -83,29 +85,45 @@ export class ImageGallery extends Component {
     );
   };
 
-  render() {
-    const { images, error, status, showBtnLoadMore, showLoader } = this.state;
+  onClickImage = (event) => {
+    this.setState({
+      largeImage: event.target.name,
+      showModal: true
+    })
+  }
 
+  closeModal = () => {
+    this.setState({
+      showModal: false,
+    });
+  };
+
+  render() {
+    const { images, error, status, showBtnLoadMore, showLoader, showModal, largeImage } = this.state;
+    console.log(images);
     if (status === 'idle') {
       return <WaitRequest />;
     }
     if (status === 'rejected') {
-      return <h2>{error.message}</h2>;
+      return <NotFound error={error.message} />;
     }
     if (status === 'resolved' || status === 'pending') {
       return (
         <div className="Wrapper">
-          <ul className="ImageGallery">
-            {images.map(({ id, webformatURL, tags }) => {
+          <ul className="ImageGallery"  >
+            {images.map(({ id, webformatURL, tags, largeImageURL }) => {
               return (
                 <ImageGalleryItem
                   key={id}
                   webformatURL={webformatURL}
                   tags={tags}
+                  largeImageURL={largeImageURL}
+                  onClick={this.onClickImage}
                 />
               );
             })}
           </ul>
+          {showModal && <Modal closeModal={this.closeModal}><img src={largeImage} alt="" /></Modal>}
           {showLoader && <Loader />}
           {showBtnLoadMore && <Button loadMore={this.onClickLoadMore} />}
         </div>

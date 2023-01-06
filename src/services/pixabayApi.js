@@ -17,7 +17,7 @@ export const fetchImages = async (query, page) => {
   const response = await axios.get(`${API_URL}?${searchParams}`);
   if (response.data.total === 0) {
     Notiflix.Notify.failure(
-      'Sorry, there are no images matching your search query. Please try again.'
+      'No images matching your search query. Please try again.'
     );
     throw new Error('Nothing found for your request');
   }
