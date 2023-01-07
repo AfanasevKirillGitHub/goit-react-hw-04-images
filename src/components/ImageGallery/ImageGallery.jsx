@@ -26,29 +26,35 @@ export class ImageGallery extends Component {
     const nextSearchName = this.props.searchName;
 
     if (prevSearchName !== nextSearchName) {
-      this.setState({ status: 'pending', page: 1, showLoader: true }, () => {
-        const page = this.state.page;
+      this.setState(
+        {
+          status: 'pending',
+          page: 1,
+          showLoader: true,
+        },
+        () => {
+          const page = this.state.page;
 
-        fetchImages(nextSearchName, page)
-          .then(images => {
-            if (images.totalHits !== 0) {
-              Notiflix.Notify.success(
-                `Hooray! We found ${images.totalHits} images.`
-              );
-              this.setState({ showBtnLoadMore: true });
-            }
-            if (images.totalHits <= 12) {
-              this.setState({ showBtnLoadMore: false });
-            }
-
-            this.setState({
-              images: [...images.hits],
-              status: 'resolved',
-              showLoader: false,
-            });
-          })
-          .catch(error => this.setState({ error, status: 'rejected' }));
-      });
+          fetchImages(nextSearchName, page)
+            .then(images => {
+              if (images.totalHits !== 0) {
+                Notiflix.Notify.success(
+                  `Hooray! We found ${images.totalHits} images.`
+                );
+                this.setState({ showBtnLoadMore: true });
+              }
+              if (images.totalHits <= 12) {
+                this.setState({ showBtnLoadMore: false });
+              }
+              this.setState({
+                images: [...images.hits],
+                status: 'resolved',
+                showLoader: false,
+              });
+            })
+            .catch(error => this.setState({ error, status: 'rejected' }));
+        }
+      );
     }
   };
 
@@ -56,10 +62,13 @@ export class ImageGallery extends Component {
     this.setState(
       prevState => ({ page: (prevState.page += 1) }),
       () => {
-        this.setState({ status: 'pending', showLoader: true });
+        this.setState({
+          status: 'pending',
+          showLoader: true,
+          showBtnLoadMore: false,
+        });
         const page = this.state.page;
         const nextSearchName = this.props.searchName;
-        // const { smoothScroll } = this.state;
 
         fetchImages(nextSearchName, page)
           .then(images => {
@@ -74,23 +83,20 @@ export class ImageGallery extends Component {
               images: [...prevState.images, ...images.hits],
               status: 'resolved',
               showLoader: false,
-              // smoothScroll: true,
+              showBtnLoadMore: true,
             }));
-            // if (smoothScroll) {
-            //   this.windowScroll();
-            // }
           })
           .catch(error => this.setState({ error, status: 'rejected' }));
       }
     );
   };
 
-  onClickImage = (event) => {
+  onClickImage = event => {
     this.setState({
       largeImage: event.target.name,
-      showModal: true
-    })
-  }
+      showModal: true,
+    });
+  };
 
   closeModal = () => {
     this.setState({
@@ -99,7 +105,15 @@ export class ImageGallery extends Component {
   };
 
   render() {
-    const { images, error, status, showBtnLoadMore, showLoader, showModal, largeImage } = this.state;
+    const {
+      images,
+      error,
+      status,
+      showBtnLoadMore,
+      showLoader,
+      showModal,
+      largeImage,
+    } = this.state;
     if (status === 'idle') {
       return <WaitRequest />;
     }
@@ -109,7 +123,7 @@ export class ImageGallery extends Component {
     if (status === 'resolved' || status === 'pending') {
       return (
         <div className="Wrapper">
-          <ul className="ImageGallery"  >
+          <ul className="ImageGallery">
             {images.map(({ id, webformatURL, tags, largeImageURL }) => {
               return (
                 <ImageGalleryItem
@@ -122,7 +136,11 @@ export class ImageGallery extends Component {
               );
             })}
           </ul>
-          {showModal && <Modal closeModal={this.closeModal}><img src={largeImage} alt="" /></Modal>}
+          {showModal && (
+            <Modal closeModal={this.closeModal}>
+              <img src={largeImage} alt="" />
+            </Modal>
+          )}
           {showLoader && <Loader />}
           {showBtnLoadMore && <Button loadMore={this.onClickLoadMore} />}
         </div>
