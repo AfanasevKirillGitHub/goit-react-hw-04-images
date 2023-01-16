@@ -1,47 +1,45 @@
-import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { SlClose } from 'react-icons/sl';
+import { useEffect } from 'react';
 
-export class Modal extends Component {
-  static propTypes = {
-    closeModal: PropTypes.func.isRequired,
-  };
+export const Modal = ({ closeModal, children }) => {
+  useEffect(() => {
+    window.addEventListener('keydown', closeOnClickEsc);
+    return () => {
+      window.removeEventListener('keydown', closeOnClickEsc);
+    };
+  });
 
-  componentDidMount() {
-    window.addEventListener('keydown', this.closeOnClickEsc);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.closeOnClickEsc);
-  }
-
-  closeOnClickBackDrop = event => {
+  const closeOnClickBackDrop = event => {
     if (event.target === event.currentTarget) {
-      this.props.closeModal();
-    }
-  };
-  closeOnClickEsc = event => {
-    if (event.code === 'Escape') {
-      this.props.closeModal();
+      closeModal();
     }
   };
 
-  render() {
-    const { children, closeModal } = this.props;
-    return (
-      <div className="Overlay" onClick={this.closeOnClickBackDrop}>
-        <div className="Modal">
-          {children}
-          <button
-            className="Close-Modal"
-            type="button"
-            aria-label="close"
-            onClick={closeModal}
-          >
-            <SlClose size={32} color="#303f9f" />
-          </button>
-        </div>
+  const closeOnClickEsc = event => {
+    if (event.code === 'Escape') {
+      closeModal();
+    }
+  };
+
+  return (
+    <div className="Overlay" onClick={closeOnClickBackDrop}>
+      <div className="Modal">
+        {children}
+        <button
+          className="Close-Modal"
+          type="button"
+          aria-label="close"
+          onClick={closeModal}
+        >
+          <SlClose size={32} color="#303f9f" />
+        </button>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+
+Modal.propTypes = {
+  closeModal: PropTypes.func,
+  children: PropTypes.node,
+};
